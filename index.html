@@ -133,7 +133,7 @@
 
         <div class="config-box">
             <div style="margin-bottom: 10px;">
-                <input type="text" id="apiKey" placeholder="Nhập Gemini API Key của bạn..." style="width: 320px;">
+                <input type="text" id="apiKey" placeholder="Nhập Gemini API Key của bạn..." style="width: 320px;" oninput="saveApiKey()">
             </div>
             <div>
                 <input type="file" id="audioUpload" accept=".mp3">
@@ -169,6 +169,21 @@
     </div>
 
     <script>
+        // Tự động điền API Key đã lưu khi mở web
+        window.onload = function() {
+            const savedKey = localStorage.getItem("gemini_saved_key");
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+            }
+            loadHistory();
+        };
+
+        // Tự động lưu Key mỗi khi gõ hoặc dán vào ô
+        function saveApiKey() {
+            const key = document.getElementById('apiKey').value.trim();
+            localStorage.setItem("gemini_saved_key", key);
+        }
+
         function toggleTheme() {
             const body = document.body;
             body.setAttribute('data-theme', body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
@@ -221,10 +236,7 @@
                 aiText = aiText.replace(/```json|```/g, '').trim(); 
                 const parsedData = JSON.parse(aiText);
 
-                // Lưu vào LocalStorage kèm theo lưu trữ Audio dạng Object URL tạm thời trong phiên làm việc
                 localStorage.setItem("lesson_" + fileInput.name, JSON.stringify(parsedData));
-                
-                // Lưu file audio dưới dạng tạm thời vào bộ nhớ cache phiên
                 window[fileInput.name] = URL.createObjectURL(fileInput);
 
                 loadHistory();
@@ -244,10 +256,9 @@
             if (window[fileName]) {
                 player.src = window[fileName];
             } else {
-                player.src = ""; // Nếu mở lại từ thiết bị khác chưa có file mp3 vật lý
+                player.src = ""; 
             }
 
-            // Render Transcript
             let transcriptHTML = '';
             if(data.transcript && data.transcript.length > 0) {
                 data.transcript.forEach(line => {
@@ -258,7 +269,6 @@
             }
             document.getElementById('transcript-area').innerHTML = transcriptHTML;
 
-            // Render Glossary
             let glossaryHTML = '<ul style="padding-left: 20px;">';
             if(data.glossary && data.glossary.length > 0) {
                 data.glossary.forEach(item => {
@@ -304,7 +314,6 @@
             document.getElementById('audioPlayer').playbackRate = parseFloat(speed);
         }
 
-        // Tính năng xuất dữ liệu thành file JSON để chuyển qua điện thoại/máy tính khác
         function exportData() {
             let backupObj = {};
             for (let i = 0; i < localStorage.length; i++) {
@@ -322,7 +331,6 @@
             downloadAnchor.remove();
         }
 
-        // Tính năng nhập dữ liệu từ máy khác sang
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -341,8 +349,6 @@
             };
             reader.readAsText(file);
         }
-
-        window.onload = loadHistory;
     </script>
 </body>
 </html>
