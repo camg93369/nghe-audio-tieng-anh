@@ -118,7 +118,7 @@
 
     <div id="sidebar">
         <h3>📚 Danh Sách Bài Học</h3>
-        <p style="font-size: 12px; opacity: 0.8;">Chọn bài đã học hoặc tải bài mới:</p>
+        <p style="font-size: 12px; opacity: 0.8;">Đã tự động sắp xếp theo thứ tự:</p>
         <ul id="history-list"></ul>
         <button onclick="exportData()" style="margin-top: 10px; background: #6c757d;">💾 Sao lưu dữ liệu</button>
         <input type="file" id="importFile" style="display:none" onchange="importData(event)">
@@ -169,7 +169,6 @@
     </div>
 
     <script>
-        // Tự động điền API Key đã lưu khi mở web
         window.onload = function() {
             const savedKey = localStorage.getItem("gemini_saved_key");
             if (savedKey) {
@@ -178,7 +177,6 @@
             loadHistory();
         };
 
-        // Tự động lưu Key mỗi khi gõ hoặc dán vào ô
         function saveApiKey() {
             const key = document.getElementById('apiKey').value.trim();
             localStorage.setItem("gemini_saved_key", key);
@@ -249,7 +247,7 @@
         }
 
         function displayContent(fileName, data) {
-            document.getElementById('current-title').innerText = "Đang học: " + fileName;
+            document.getElementById('current-title').innerText = "Đang phát: " + fileName;
             document.getElementById('player-card').style.display = "block";
             
             const player = document.getElementById('audioPlayer');
@@ -284,23 +282,34 @@
         function loadHistory() {
             const list = document.getElementById('history-list');
             list.innerHTML = '';
-            let count = 0;
+            
+            // Thu thập tất cả các bài học đã lưu
+            let lessons = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key.startsWith("lesson_")) {
-                    count++;
-                    const fileName = key.replace("lesson_", "");
-                    list.innerHTML += `<li onclick="selectLesson('${fileName}')">🎵 ${fileName}</li>`;
+                    lessons.push(key.replace("lesson_", ""));
                 }
             }
-            if (count === 0) {
+
+            // Sắp xếp danh sách bài theo tên thông minh (1.1, 1.2, 1.10 thay vì lộn xộn)
+            lessons.sort((a, b) => {
+                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            // Hiển thị ra giao diện theo đúng thứ tự đã sắp xếp
+            lessons.forEach(fileName => {
+                list.innerHTML += `<li onclick="selectLesson('${fileName}')">🎵 ${fileName}</li>`;
+            });
+
+            if (lessons.length === 0) {
                 list.innerHTML = '<li style="background:none; border:none; opacity:0.7;">Chưa có bài học nào được lưu.</li>';
             }
         }
 
         function selectLesson(fileName) {
             const data = JSON.parse(localStorage.getItem("lesson_" + fileName));
-            alert("Vui lòng chọn lại file MP3 tương ứng (" + fileName + ") từ máy tính của bạn để bật âm thanh, hoặc xem văn bản phía dưới ngay lập tức!");
+            alert("Vui lòng chọn lại file MP3 tương ứng (" + fileName + ") từ máy tính của bạn để bật âm thanh!");
             displayContent(fileName, data);
         }
 
@@ -342,7 +351,7 @@
                         localStorage.setItem(key, backupObj[key]);
                     }
                     loadHistory();
-                    alert("Đồng bộ dữ liệu thành công! Danh sách bài học đã được cập nhật.");
+                    alert("Đồng bộ dữ liệu thành công! Danh sách bài học đã được sắp xếp lại.");
                 } catch (err) {
                     alert("File sao lưu không hợp lệ!");
                 }
