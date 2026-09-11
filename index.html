@@ -123,6 +123,7 @@
         <button onclick="exportData()" style="margin-top: 10px; background: #6c757d;">💾 Sao lưu dữ liệu</button>
         <input type="file" id="importFile" style="display:none" onchange="importData(event)">
         <button onclick="document.getElementById('importFile').click()" style="background: #6c757d;">📂 Đồng bộ dữ liệu cũ</button>
+        <button onclick="clearAllData()" style="background: #dc3545; margin-top: 5px;">🗑️ Xóa tất cả dữ liệu</button>
     </div>
 
     <div id="main-content">
@@ -283,7 +284,6 @@
             const list = document.getElementById('history-list');
             list.innerHTML = '';
             
-            // Thu thập tất cả các bài học đã lưu
             let lessons = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -292,12 +292,10 @@
                 }
             }
 
-            // Sắp xếp danh sách bài theo tên thông minh (1.1, 1.2, 1.10 thay vì lộn xộn)
             lessons.sort((a, b) => {
                 return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
             });
 
-            // Hiển thị ra giao diện theo đúng thứ tự đã sắp xếp
             lessons.forEach(fileName => {
                 list.innerHTML += `<li onclick="selectLesson('${fileName}')">🎵 ${fileName}</li>`;
             });
@@ -351,12 +349,31 @@
                         localStorage.setItem(key, backupObj[key]);
                     }
                     loadHistory();
-                    alert("Đồng bộ dữ liệu thành công! Danh sách bài học đã được sắp xếp lại.");
+                    alert("Đồng bộ dữ liệu thành công!");
                 } catch (err) {
                     alert("File sao lưu không hợp lệ!");
                 }
             };
             reader.readAsText(file);
+        }
+
+        // Tính năng xóa tất cả dữ liệu bài học cũ (giữ lại API Key cho tiện)
+        function clearAllData() {
+            if (confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách bài học cũ không?")) {
+                let keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith("lesson_")) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                loadHistory();
+                document.getElementById('player-card').style.display = "none";
+                document.getElementById('transcript-area').innerText = "Chưa chọn bài học nào. Hãy tải file MP3 lên hoặc chọn từ danh sách bên trái.";
+                document.getElementById('glossary-area').innerText = "Danh sách từ vựng sẽ hiển thị ở đây.";
+                alert("Đã xóa sạch dữ liệu cũ! Bạn sẵn sàng nạp bộ file nghe mới của cô giáo.");
+            }
         }
     </script>
 </body>
