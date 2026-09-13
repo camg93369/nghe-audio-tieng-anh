@@ -118,7 +118,7 @@
 
     <div id="sidebar">
         <h3>📚 Danh Sách Bài Học</h3>
-        <p style="font-size: 12px; opacity: 0.8;">Đã tự động sắp xếp theo thứ tự:</p>
+        <p style="font-size: 12px; opacity: 0.8;">Sắp xếp bài đầu tiên ở đáy:</p>
         <ul id="history-list"></ul>
         <button onclick="exportData()" style="margin-top: 10px; background: #6c757d;">💾 Sao lưu dữ liệu</button>
         <input type="file" id="importFile" style="display:none" onchange="importData(event)">
@@ -292,8 +292,9 @@
                 }
             }
 
+            // Đảo ngược thứ tự: sắp xếp giảm dần (từ lớn xuống nhỏ, bài 1.1 sẽ nằm ở đáy)
             lessons.sort((a, b) => {
-                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+                return b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' });
             });
 
             lessons.forEach(fileName => {
@@ -357,7 +358,6 @@
             reader.readAsText(file);
         }
 
-        // Tính năng xóa tất cả dữ liệu bài học cũ (giữ lại API Key cho tiện)
         function clearAllData() {
             if (confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách bài học cũ không?")) {
                 let keysToRemove = [];
@@ -372,7 +372,7 @@
                 document.getElementById('player-card').style.display = "none";
                 document.getElementById('transcript-area').innerText = "Chưa chọn bài học nào. Hãy tải file MP3 lên hoặc chọn từ danh sách bên trái.";
                 document.getElementById('glossary-area').innerText = "Danh sách từ vựng sẽ hiển thị ở đây.";
-                alert("Đã xóa sạch dữ liệu cũ! Bạn sẵn sàng nạp bộ file nghe mới của cô giáo.");
+                alert("Đã xóa sạch dữ liệu cũ!");
             }
         }
     </script>
